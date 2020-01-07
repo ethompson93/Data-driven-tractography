@@ -3,14 +3,14 @@ from scipy import sparse
 import pandas as pd
 
 
-#directory where subject data is stored
+#directory where subject data is stored (in format data_dir/subID/sesID/...)
 data_dir = "/share/neurodev/matrix2/"
 
 #directory where average matrix is to be saved
-results_dir = "/share/neurodev/matrix2/Results/NMF_paper/classifier/" 
+results_dir = "/gpfs01/home/ppxet1/tests/pipeline_output/" 
 
 #list of subjects, in csv file with headings including "subID" and "sesID", for subject ID and session ID respectively
-subject_list="/gpfs01/home/ppxet1/scripts/NMF_paper/all_subjects.csv".format(split)
+subject_list="/gpfs01/home/ppxet1/scripts/NMF_paper/pipeline/subject_list.csv"
 
 df = pd.read_csv(subject_list)
 
