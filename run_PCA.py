@@ -3,20 +3,20 @@ from scipy import sparse
 from numpy import array, matrix
 import sys
 
-#number of principal components to use
-dPCA = 500 
-
 #path to group level connectivity matrix
-cm_path = "/share/neurodev/matrix2/Results/NMF_paper/classifier/average_cm.npz"
+cm_path = sys.argv[1]
 
 #where you want to save the components
-results_dir = "/share/neurodev/matrix2/Results/NMF_paper/classifier/" 
+results_dir = sys.argv[2]
+
+#number of principal components to use
+dPCA = int(sys.argv[3])
 
 def run_PCA(connectivity_matrix, dPCA) :
     
     from sklearn.decomposition import PCA
 
-    pca = PCA(n_components=dPCA)
+    pca = PCA(n_components=dPCA, random_state=1)
     PCs = pca.fit_transform(connectivity_matrix)
 
     #variance explained by all the components, as a percentage of the total    
@@ -32,5 +32,5 @@ connectivity_matrix = x.toarray()
 PCs, explained_variance = run_PCA(connectivity_matrix, dPCA)
 
 print("{} components, variance explained = {}".format(dPCA, explained_variance))
-np.save("{}{}_PCs.npy".format(results_dir, dPCA), PCs)
+np.save("{}/{}_PCs.npy".format(results_dir, dPCA), PCs)
 

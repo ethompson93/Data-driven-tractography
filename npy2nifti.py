@@ -1,18 +1,20 @@
 import numpy as np
 import nibabel as nib
+import sys
 
 #path to white matter component matrix in .npy format that you want to convert to nifti
-component_path="/share/neurodev/matrix2/Results/NMF_paper/NMF/5_NMFcomps_split1.npy"
+component_path = sys.argv[1]
 
-#tractspace coordinates from Fdt
-coordinate_path="/share/neurodev/matrix2/CC00069XX12/ses-26300/tract_space_coords_for_fdt_matrix2"
+#path to a directory containing the probtrack2 output (coords should be the same for all subjects)
+fdt_dir = sys.argv[2]
+coordinate_path = fdt_dir + "/tract_space_coords_for_fdt_matrix2"
 
 #reference image used as target for tractography
-ref_path="/share/neurodev/matrix2/template-40-mask_2mm_novent.nii.gz"
+ref_path = sys.argv[3]
 
 
-ref_img =nib.load(ref_path)
-components=np.load(component_path)
+ref_img = nib.load(ref_path)
+components = np.load(component_path)
 
 #load in tract space coordinates
 file = open(coordinate_path, "r")

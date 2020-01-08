@@ -2,23 +2,25 @@ import numpy as np
 import nibabel as nib
 import copy
 import subprocess
+import sys
 
 #path to grey matter component matrix in .npy format that you want to convert to cifti
-component_path="/share/neurodev/matrix2/Results/NMF_paper/NMF/5_W_split1.npy"
+component_path = sys.argv[1]
 fname = component_path[:-4]
 
 #seed space coordinates from Fdt
-coordinate_path="/share/neurodev/matrix2/CC00069XX12/ses-26300/coords_for_fdt_matrix2"
+fdt_dir = sys.argv[2]
+coordinate_path = fdt_dir + "/coords_for_fdt_matrix2"
 
 #paths to cortical ROIs used to seed tractography
-roi_path_l="/share/neurodev/matrix2/week40.L.atlasroi.32k.inv.func.gii"
-roi_path_r="/share/neurodev/matrix2/week40.R.atlasroi.32k.inv.func.gii"
+roi_path_l = sys.argv[3]
+roi_path_r= sys.argv[4]
 
-#paths to reference image used for tractography target
-ref_img = nib.load("/share/neurodev/matrix2/template-40-mask_2mm.nii.gz")
+#path to reference image used for tractography target
+ref_path = sys.argv[5]
 
 #path to label volume
-label_vol_path = "/share/neurodev/matrix2/label_vol.nii.gz"
+label_vol_path = sys.argv[6]
 
 
 #########################################################################################
@@ -57,8 +59,8 @@ tmp_r = nib.load(roi_path_r)
 tmp_l.darrays[0].data.setflags(write=1)
 tmp_r.darrays[0].data.setflags(write=1)
 
-tmp_l.darrays[0].data[left_roi_ind] = ICs_l[:,0]
-tmp_r.darrays[0].data[right_roi_ind] = ICs_r[:,0]
+tmp_l.darrays[0].data[left_roi_ind] = comps_l[:,0]
+tmp_r.darrays[0].data[right_roi_ind] = comps_r[:,0]
     
 #save a gifti metric file for each component
 for j in range(1, n_comp) :
@@ -73,6 +75,7 @@ nib.save(tmp_r, fname + ".R.shape.gii")
 nib.save(tmp_l, fname + ".L.shape.gii")
     
 #save volume part as nifti
+ref_img = nib.load(ref_path)
 ref_affine =ref_img.affine
 (x, y, z) = ref_img.shape
 volume_components = np.zeros((x, y, z, n_comp))

@@ -1,5 +1,13 @@
 import numpy as np
 from sklearn.preprocessing import StandardScaler
+import sys
+
+#components used to generate parcellation
+component_path=sys.argv[1]
+
+#path and name for the output file
+output_filename = sys.argv[2]
+
 
 def parcellate(components):
     #scale components before parcellation
@@ -15,18 +23,11 @@ def parcellate(components):
 
     return parcellation
 
-#where you want to save parcellation
-results_dir = "/gpfs01/home/ppxet1/tests/pipeline_output/"
-
-#components used to generate parcellation
-component_path="/share/neurodev/matrix2/Results/NMF_paper/NMF/200_W_split1.npy"
-
-
 
 #load components and generate parcellation
 components = np.load(component_path)
 parcellation = parcellate(components)
 
 #save parcellations
-np.save("{}parcellation.npy".format(results_dir), parcellation)
+np.save(output_filename, parcellation)
 

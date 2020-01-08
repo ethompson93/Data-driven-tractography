@@ -5,15 +5,16 @@ from sklearn.decomposition import FastICA
 import sys
 
 #path to principal components
-pca_path="/share/neurodev/matrix2/Results/NMF_paper/ICA/500_PCs.npy"
-
-#where you want to save the results
-results_dir="/home/ppxet1/tests/imgvolta2/"
+pca_path=sys.argv[1]
 
 #path to connectivity matrix
-cm_path="/share/neurodev/matrix2/Results/NMF_paper/average_cm.npz"
+cm_path=sys.argv[2]
 
-num_components = 100
+#where you want to save the results
+results_dir=sys.argv[3]
+
+#model order for the decomposition
+num_components = int(sys.argv[4])
 
 
 def run_ICA(PCs, connectivity_matrix, num_components) :
@@ -42,7 +43,7 @@ x = sparse.load_npz(cm_path)
 connectivity_matrix = x.toarray()
 print "loaded data"
 
-mixing_matrix, ICs = run_ICA(PCs, connectivity_matrix, num_components)
+gm_ICs, wm_ICs = run_ICA(PCs, connectivity_matrix, num_components)
 
-np.save("{}{}_ICs.npy".format(results_dir, num_components), ICs)
-np.save("{}{}_MM.npy".format(results_dir, num_components), mixing_matrix)
+np.save("{}/{}_gm_ICs.npy".format(results_dir, num_components), gm_ICs)
+np.save("{}/{}_wm_ICs.npy".format(results_dir, num_components), wm_ICs)

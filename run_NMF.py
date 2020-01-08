@@ -4,11 +4,14 @@ from numpy import array, matrix
 from sklearn.decomposition import NMF as nmf
 import sys
 
-results_dir="/gpfs01/home/ppxet1/tests/imgvolta2/"
+#path to connectivity matrix
+cm_path = sys.argv[1]
 
-cm_path="/share/neurodev/matrix2/Results/NMF_paper/average_cm.npz"
+#where you want to save the results
+results_dir= sys.argv[2]
 
-num_components = 100
+#model order for the decomposition
+num_components = int(sys.argv[3])
 
 #regularisation parameters
 alpha=0.1
@@ -20,10 +23,10 @@ connectivity_matrix = x.toarray()
 print "loaded data"
 
 #apply NMF to connectivity matrix
-model = nmf(n_components=num_components, alpha=alpha, l1_ratio=l1_ratio, random_state=1)
+model = nmf(n_components=num_components, alpha=alpha, l1_ratio=l1_ratio, init="nndsvd", random_state=1)
 W = model.fit_transform(connectivity_matrix)
 H = model.components_
 
 #save results
-np.save("{}{}_NMFmm.npy".format(results_dir, num_components), H)
-np.save("{}{}_NMFcomps.npy".format(results_dir, num_components), W)
+np.save("{}/{}_wm_NMF.npy".format(results_dir, num_components), H)
+np.save("{}/{}_gm_NMF.npy".format(results_dir, num_components), W)

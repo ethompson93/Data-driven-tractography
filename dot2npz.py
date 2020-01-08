@@ -3,13 +3,15 @@ from numpy import array, matrix
 from scipy import sparse
 import gzip
 import sys
+
+#converts .dot sparse file output by probtrackx to python readable .npz format
 filename = sys.argv[1]
-#results_dir = sys.argv[2]
+
 def dot2npz(filename):
 
-	new_filename = filename + '.npz'
+	new_filename = filename[:-7] + '.npz'
 
-	f = gzip.GzipFile(filename + '.dot.gz', "r")
+	f = gzip.GzipFile(filename, "r")
 	
 	x = np.loadtxt(f)
 	print x[-1,0]
