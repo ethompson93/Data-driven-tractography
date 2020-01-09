@@ -8,7 +8,7 @@ import sys
 cm_path = sys.argv[1]
 
 #where you want to save the results
-results_dir= sys.argv[2]
+output_filename= sys.argv[2]
 
 #model order for the decomposition
 num_components = int(sys.argv[3])
@@ -28,5 +28,5 @@ W = model.fit_transform(connectivity_matrix)
 H = model.components_
 
 #save results
-np.save("{}/{}_wm_NMF.npy".format(results_dir, num_components), H)
-np.save("{}/{}_gm_NMF.npy".format(results_dir, num_components), W)
+np.save("{}_wm".format(output_filename), H)
+np.save("{}_gm".format(output_filename), W)

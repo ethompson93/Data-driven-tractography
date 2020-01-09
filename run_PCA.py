@@ -7,7 +7,7 @@ import sys
 cm_path = sys.argv[1]
 
 #where you want to save the components
-results_dir = sys.argv[2]
+output_filename = sys.argv[2]
 
 #number of principal components to use
 dPCA = int(sys.argv[3])
@@ -32,5 +32,5 @@ connectivity_matrix = x.toarray()
 PCs, explained_variance = run_PCA(connectivity_matrix, dPCA)
 
 print("{} components, variance explained = {}".format(dPCA, explained_variance))
-np.save("{}/{}_PCs.npy".format(results_dir, dPCA), PCs)
+np.save(output_filename, PCs)
 

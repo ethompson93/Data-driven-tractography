@@ -18,50 +18,55 @@ roi_path_l="/share/neurodev/matrix2/week40.L.atlasroi.32k.inv.func.gii"
 roi_path_r="/share/neurodev/matrix2/week40.R.atlasroi.32k.inv.func.gii"
 label_volume="/share/neurodev/matrix2/label_vol.nii.gz"
 
+PCAfilename="${results_dir}/${n_PCs}_PCs"
+ICAfilename="${results_dir}/${n_components}_ICA"
+NMFfilename="${results_dir}/${n_components}_NMF"
+
+
 {
 read
 		
 while IFS=, read -r N subjID sesID remainder ; do
 	echo "processing ${subjID} ses-${sesID}"
 	#prepare data
-#	${scripts_dir}/pre_mat2.sh ${subjID} ses-${sesID}
+	${scripts_dir}/pre_mat2.sh ${subjID} ses-${sesID}
 
 	#generate matrix 2
-#	${scripts_dir}/run_mat2.sh ${subjID} ses-${sesID}
+	${scripts_dir}/run_mat2.sh ${subjID} ses-${sesID}
 
 	#convert matrix 2 to python sparse format
-#	${scripts_dir}/post_mat2.sh ${subjID} ses-${sesID}
-#	python ${scripts_dir}/dot2npz.py ${data_dir}/${subjID}/ses-${sesID}/fdt_matrix2.dot.gz
+	${scripts_dir}/post_mat2.sh ${subjID} ses-${sesID}
+	python ${scripts_dir}/dot2npz.py ${data_dir}/${subjID}/ses-${sesID}/fdt_matrix2.dot.gz
 	
 done 
 
 } < ${subject_list}
 
 #average matrices together
-#python ${scripts_dir}/average_matrices.py ${subject_list} ${data_dir} ${results_dir}/average_mat2
+python ${scripts_dir}/average_matrices.py ${subject_list} ${data_dir} ${results_dir}/average_mat2
 
 #run PCA
-#python ${scripts_dir}/run_PCA.py ${results_dir}/average_mat2.npz ${results_dir} ${n_PCs}
+python ${scripts_dir}/run_PCA.py ${results_dir}/average_mat2.npz ${PCAfilename} ${n_PCs}
 
 #run ICA
-#python ${scripts_dir}/run_ICA.py ${results_dir}/${n_PCs}_PCs.npy ${results_dir}/average_mat2.npz ${results_dir} ${n_components}
+python ${scripts_dir}/run_ICA.py ${PCA_array}.npy ${results_dir}/average_mat2.npz ${ICAfilename} ${n_components}
 
 #run NMF
-#python ${scripts_dir}/run_NMF.py ${results_dir}/average_mat2.npz ${results_dir} ${n_components}
+python ${scripts_dir}/run_NMF.py ${results_dir}/average_mat2.npz ${NMFfilename} ${n_components}
 
 #convert white matter components to nifti format
 for decomposition in ICs NMF; do
-	python ${scripts_dir}/npy2nifti.py ${results_dir}/${n_components}_wm_${decomposition}.npy ${data_dir}/CC00069XX12/ses-26300 ${volume_template}
+	python ${scripts_dir}/npy2nifti.py ${results_dir}/${n_components}_${decomposition}_wm.npy ${data_dir}/CC00069XX12/ses-26300 ${volume_template}
 
 #convert grey matter components to cifti
 
-	python ${scripts_dir}/npy2cifti.py ${results_dir}/${n_components}_gm_${decomposition}.npy ${data_dir}/CC00069XX12/ses-26300 ${roi_path_l} ${roi_path_r} ${volume_template} ${label_volume}
+	python ${scripts_dir}/npy2cifti.py ${results_dir}/${n_components}_${decomposition}_gm.npy ${data_dir}/CC00069XX12/ses-26300 ${roi_path_l} ${roi_path_r} ${volume_template} ${label_volume}
 done
 
 
 #generate parcellations for group level results
 for decomposition in ICs NMF; do
-	python ${scripts_dir}/parcellate.py ${results_dir}/${n_components}_gm_${decomposition}.npy ${results_dir}/${n_components}_${decomposition}_parc.npy 
+	python ${scripts_dir}/parcellate.py ${results_dir}/${n_components}_${decomposition}_gm.npy ${results_dir}/${n_components}_${decomposition}_parc.npy 
 
 done
 
@@ -71,7 +76,7 @@ read
 		
 while IFS=, read -r N subjID sesID remainder ; do
 	echo "running dual regression for ${subjID} ses-${sesID}"
-	python NNLS_dual_regression.py ${results_dir}/${n_components}_gm_NMF.npy ${data_dir} ${subjID} ses-${sesID} ${results_dir}
+	python NNLS_dual_regression.py ${results_dir}/${n_components}_NMF_gm.npy ${data_dir} ${subjID} ses-${sesID} ${results_dir}
 	
 done 
 

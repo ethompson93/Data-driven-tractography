@@ -11,7 +11,7 @@ pca_path=sys.argv[1]
 cm_path=sys.argv[2]
 
 #where you want to save the results
-results_dir=sys.argv[3]
+output_filename=sys.argv[3]
 
 #model order for the decomposition
 num_components = int(sys.argv[4])
@@ -45,5 +45,5 @@ print "loaded data"
 
 gm_ICs, wm_ICs = run_ICA(PCs, connectivity_matrix, num_components)
 
-np.save("{}/{}_gm_ICs.npy".format(results_dir, num_components), gm_ICs)
-np.save("{}/{}_wm_ICs.npy".format(results_dir, num_components), wm_ICs)
+np.save("{}_gm".format(output_filename), gm_ICs)
+np.save("{}_wm".format(output_filename), wm_ICs)
