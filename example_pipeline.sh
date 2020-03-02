@@ -49,7 +49,7 @@ python ${scripts_dir}/average_matrices.py ${subject_list} ${data_dir} ${results_
 python ${scripts_dir}/run_PCA.py ${results_dir}/average_mat2.npz ${PCAfilename} ${n_PCs}
 
 #run ICA
-python ${scripts_dir}/run_ICA.py ${PCA_array}.npy ${results_dir}/average_mat2.npz ${ICAfilename} ${n_components}
+python ${scripts_dir}/run_ICA.py ${PCAfilename}.npy ${results_dir}/average_mat2.npz ${ICAfilename} ${n_components}
 
 #run NMF
 python ${scripts_dir}/run_NMF.py ${results_dir}/average_mat2.npz ${NMFfilename} ${n_components}
@@ -60,7 +60,7 @@ for decomposition in ICs NMF; do
 
 #convert grey matter components to cifti
 
-	python ${scripts_dir}/npy2cifti.py ${results_dir}/${n_components}_${decomposition}_gm.npy ${data_dir}/CC00069XX12/ses-26300 ${roi_path_l} ${roi_path_r} ${volume_template} ${label_volume}
+	python ${scripts_dir}/npy2cifti.py ${results_dir}/${n_components}_${decomposition}_gm.npy ${data_dir}/CC00069XX12/ses-26300 ${roi_path_l} ${roi_path_r} ${label_volume}
 done
 
 

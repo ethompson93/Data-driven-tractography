@@ -16,11 +16,8 @@ coordinate_path = fdt_dir + "/coords_for_fdt_matrix2"
 roi_path_l = sys.argv[3]
 roi_path_r= sys.argv[4]
 
-#path to reference image used for tractography target
-ref_path = sys.argv[5]
-
 #path to label volume
-label_vol_path = sys.argv[6]
+label_vol_path = sys.argv[5]
 
 
 #########################################################################################
@@ -37,7 +34,7 @@ coords = coords.astype(int)
 #seperate out left and right hemispheres
 left = coords[coords[:,3] == 0]
 right = coords[coords[:,3] == 1]
-volume = coords[coords[:,3] == 2]
+volume = coords[coords[:,3] >= 2]
 
 n_l = np.shape(left)[0]
 n_r = np.shape(right)[0]
@@ -75,7 +72,7 @@ nib.save(tmp_r, fname + ".R.shape.gii")
 nib.save(tmp_l, fname + ".L.shape.gii")
     
 #save volume part as nifti
-ref_img = nib.load(ref_path)
+ref_img = nib.load(label_vol_path)
 ref_affine =ref_img.affine
 (x, y, z) = ref_img.shape
 volume_components = np.zeros((x, y, z, n_comp))
