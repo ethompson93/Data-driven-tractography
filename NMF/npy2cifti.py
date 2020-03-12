@@ -39,6 +39,7 @@ volume = coords[coords[:,3] >= 2]
 n_l = np.shape(left)[0]
 n_r = np.shape(right)[0]
 n_v = np.shape(volume)[0]
+print(n_v)
 
 comps_l= components[:n_l,:]
 comps_r = components[n_l:(n_r+n_l),:]
@@ -58,7 +59,7 @@ tmp_r.darrays[0].data.setflags(write=1)
 
 tmp_l.darrays[0].data[left_roi_ind] = comps_l[:,0]
 tmp_r.darrays[0].data[right_roi_ind] = comps_r[:,0]
-    
+
 #save a gifti metric file for each component
 for j in range(1, n_comp) :
 	left = copy.deepcopy(left_roi.darrays[0].data)
@@ -70,7 +71,7 @@ for j in range(1, n_comp) :
 
 nib.save(tmp_r, fname + ".R.shape.gii")
 nib.save(tmp_l, fname + ".L.shape.gii")
-    
+
 #save volume part as nifti
 ref_img = nib.load(label_vol_path)
 ref_affine =ref_img.affine
@@ -83,7 +84,7 @@ for n in range(n_comp):
 img = nib.Nifti1Image(volume_components, ref_affine)
 nib.save(img, fname + ".nii.gz")
 
-    
+
 #combine into a cifti
 subprocess.call(["wb_command", "-cifti-create-dense-scalar", "{}.dscalar.nii".format(fname),
                      "-volume", "{}.nii.gz".format(fname), label_vol_path, "-left-metric", "{}.L.shape.gii".format(fname),
@@ -93,4 +94,3 @@ subprocess.call(["wb_command", "-cifti-create-dense-scalar", "{}.dscalar.nii".fo
 subprocess.call(["rm", "{}.nii.gz".format(fname)])
 subprocess.call(["rm", "{}.R.shape.gii".format(fname)])
 subprocess.call(["rm", "{}.L.shape.gii".format(fname)])
-

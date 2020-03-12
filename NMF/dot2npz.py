@@ -26,6 +26,6 @@ def dot2npz(filename):
 	
 	sparse.save_npz(new_filename, connectivity_matrix)
 
-dot2npz(filename)
+dot2npz(filename + '/fdt_matrix2.dot.gz')
 
 
