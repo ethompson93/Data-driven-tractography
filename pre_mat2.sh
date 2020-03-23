@@ -28,6 +28,7 @@ mkdir /share/neurodev/matrix2/${subject}
 mkdir ${results_dir}
 
 age=`cat /share/neurodev/dHCP_neo_dMRI_v2/${subject}/${session}/age`
+if [ "${age}" -eq "45" ] ; then age=44; fi #use 44 week template for subjects aged 45 weeks
 
 if [ ! -f ${results_dir}/sub-${subject}_${session}_std40w_left_white.32k_fs_LR.surf.gii ] || [ ! -f ${results_dir}/sub-${subject}_${session}_std40w_right_white.32k_fs_LR.surf.gii ]; then
 	if [ "${age}" -ne "40" ] ; then

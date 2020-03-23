@@ -6,57 +6,84 @@ import sys
 import re
 import scipy
 from scipy.optimize import nnls
+from multiprocessing import Pool
+import time
+
+def nnls_func(p):
+    comp, rnorm = nnls(p[0], p[1])
+    return comp
 
 #path to group level grey matter components
 group_gm_path= sys.argv[1]
 
-#directory where subject data are stored (in format data_dir/subID/sesID/...)
-data_dir = sys.argv[2]
+#path to subject (or different group) level connectivity matrix, stored in .npz format
+subj_cmat_path = sys.argv[2]
 
-#subject and session IDs
-subject = sys.argv[3]
-session = sys.argv[4]
+#output path 
+results_path = sys.argv[3] 
 
-subj_dir = "{}/{}/{}".format(data_dir, subject, session)
+#number of cores to use
+n_cores = int(sys.argv[4])
 
-#directory where you want results to be stored
-results_dir = sys.argv[5] 
-
-
+########################
+chunksize=5
+start = time.time()
 #load in group data
 group_gm = np.load(group_gm_path)
 n_comp = group_gm.shape[1]
 
+print "PARALLELISED, number of cores = {}, number of components = {}, chunksize = {}".format(n_cores, n_comp, chunksize)
+
 #load connectivity matrix
 print "preparing data"
-cmat = "{}/fdt_matrix2.npz".format(subj_dir)
-x = sparse.load_npz(cmat)
+x = sparse.load_npz(subj_cmat_path)
 connectivity_matrix = x.toarray()
 n_vertices, n_voxels = np.shape(connectivity_matrix)
 
 #normalise by waytotal
-waytotal_file = subj_dir + "/waytotal"
-w = open(waytotal_file, "r")
-waytotal = w.readline()
-waytotal = int(waytotal.rstrip())
-connectivity_matrix = (1e8)*connectivity_matrix/waytotal
+#waytotal_file = subj_dir + "/waytotal"
+#w = open(waytotal_file, "r")
+#waytotal = w.readline()
+#waytotal = int(waytotal.rstrip())
+#connectivity_matrix = (1e8)*connectivity_matrix/waytotal
+end = time.time()
 
+print("time taken to load data = %s" % (end - start))
              
 #project group_data onto connectivity matrix
 print "calulating subject specific tract components"
+start=time.time()
 tract_comp = np.zeros((n_comp, n_voxels))
-for i in range(n_voxels):
-	tract_comp[:, i], rnorm = nnls(group_gm, connectivity_matrix[:,i])
+inputlist = [[group_gm, connectivity_matrix[:,i]] for i in range(n_voxels)]
 
+p= Pool(processes=n_cores)
+tract_list = p.imap(nnls_func, inputlist, chunksize=chunksize)
+tract_list = list(tract_list)
+
+for i in range(n_voxels):
+    tract_comp[:,i] = tract_list[i]
+end = time.time()
+
+print("time taken to generate wm components = %s" % (end - start))
 
 #find subject-specific mixing matrix
 print "calculating subject specific surface components"
+start = time.time()
 surf_comp = np.zeros((n_comp, n_vertices))
-for j in range(n_vertices):
-	surf_comp[:,j], rnorm = nnls(tract_comp.T, connectivity_matrix.T[:,j])
+inputlist = [[tract_comp.T, connectivity_matrix.T[:,j]] for j in range(n_vertices)]
+surf_list = p.imap(nnls_func, inputlist, chunksize=chunksize)
+
+p.close()
+p.join()
+surf_list = list(surf_list)
+for i in range(n_vertices):
+    surf_comp[:,i] = surf_list[i]
 surf_comp = surf_comp.T
 
+end = time.time()
+print("time taken to generate gm components = %s" % (end - start))
+
 #save as numpy array
-np.save("{}/{}_{}_{}_gm_NMF.npy".format(results_dir,  subject, session, n_comp), surf_comp)
-np.save("{}/{}_{}_{}_wm_NMF.npy".format(results_dir, subject, session,  n_comp), tract_comp)
+np.save("{}_gm.npy".format(results_path), surf_comp)
+np.save("{}_wm.npy".format(results_path), tract_comp)
 
