@@ -3,8 +3,8 @@
 if [ "$2" == "" ];then
     echo ""
     echo " pre matrix 2 <subject ID> <session ID>"
-    echo " generates a warp from structural space to 40 week template "
-    echo " transforms surface files to standard space to be used as seeds in ptx "
+    echo " generates a warp from structural space to 40 week volume template "
+    echo " transforms surface files to standard space to be used as seeds in ptx"
     echo ""
     exit 1
 fi
@@ -17,7 +17,7 @@ module load connectome-uon/workbench-1.3.2
 #module load cuda/local/9.2
 
 results_dir=/share/neurodev/matrix2/${subject}/${session}
-anat_dir=/share/neurodev/Surfaces32k_june2018/reconstructions_june2018/sub-${subject}/${session}/anat/fsaverage_LR32k
+anat_dir=/share/neurodev/Surfaces32k_june2018/reconstructions_june2018/sub-${subject}/${session}/anat/fsaverage_LR32k ##assumes MSM has already been carried out to align surfaces
 warp_dir=/share/neurodev/dHCP_neo_dMRI_v2/${subject}/${session}/Diffusion/xfms
 diffusion_dir=/share/neurodev/dHCP_neo_dMRI_v2/${subject}/${session}/Diffusion.bedpostX
 vol_template_dir=/share/neurodev/atlas/atlas-serag/T2
