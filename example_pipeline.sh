@@ -76,7 +76,7 @@ read
 		
 while IFS=, read -r N subjID sesID remainder ; do
 	echo "running dual regression for ${subjID} ses-${sesID}"
-	python NNLS_dual_regression.py ${results_dir}/${n_components}_NMF_gm.npy ${data_dir} ${subjID} ses-${sesID} ${results_dir}
+	python NNLS_dual_regression.py ${results_dir}/${n_components}_NMF_gm.npy ${data_dir}/${subjID}/ses-${sesID}/fdt_matrix2.npz ${results_dir}/${subID}_ses-${sesID}_${n_components}_DR 4
 	
 done 
 
