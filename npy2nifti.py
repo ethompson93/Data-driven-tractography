@@ -16,6 +16,9 @@ ref_path = sys.argv[3]
 ref_img = nib.load(ref_path)
 components = np.load(component_path)
 
+if components.ndim == 1:
+	components = components[np.newaxis, :]
+
 #load in tract space coordinates
 file = open(coordinate_path, "r")
 coords = np.loadtxt(file)
@@ -26,6 +29,7 @@ coords = coords.astype(int)
 ref_affine =ref_img.affine
 n_comp, n_target = components.shape
 
+#convert data to nifti coordinates
 comps_mat = np.zeros((xdim, ydim, zdim, n_comp))
 for j in range(0, n_comp):                  
 	for i in range(0, int(n_target)):

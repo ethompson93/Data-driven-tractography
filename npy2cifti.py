@@ -23,6 +23,9 @@ label_vol_path = sys.argv[5]
 #########################################################################################
 #load components
 components = np.load(component_path)
+if components.ndim == 1:
+	components = components[:, np.newaxis]
+
 n_comp = np.shape(components)[1]
 
 #load in seed space coordinates
