@@ -90,13 +90,26 @@ jobID=`echo -e $temp | awk '{print $NF}'`
 
 
 # run NMF
-#n_components=100
-#MFfilename="${results_dir}/${n_components}_NMF"
-jobsub -j -q imgcomputeq -p 1 -t 1-00:00:00 -m 170 -w ${jobID} -s runNMF_HCP_${n_components} -c "python ${scripts_dir}/run_NMF.py ${results_dir}/average_mat2.npz ${NMFfilename} ${n_components}"
+n_components=200
+alpha=0.05
+NMFfilename="${results_dir}/${n_components}_NMF"
+jobsub -j -q imgcomputeq -p 1 -t 1-00:00:00 -m 170 -w ${jobID} -s runNMF_HCP_${n_components} -c "python ${scripts_dir}/run_NMF.py ${results_dir}/average_mat2.npz ${NMFfilename} ${n_components} ${alpha}"
+
+#run PCA
+n_PCs=400
+PCAfilename="${results_dir}/${n_PCs}_PCs"
+temp=`jobsub -j -q imgcomputeq -p 1 -t 1-00:00:00 -m 170 -s runPCA_HCP_${n_components} -c "python ${scripts_dir}/run_PCA.py ${results_dir}/average_mat2.npz ${PCAfilename} ${n_PCs}"`
+jobID=`echo -e $temp | awk '{print $NF}'`
+
+#run ICA
+n_components=200
+ICAfilename="${results_dir}/${n_components}_ICA"
+jobsub -j -q imgcomputeq -p 1 -t 1-00:00:00 -m 170 -w ${jobID} -s runICA_HCP_${n_components} -c "python ${scripts_dir}/run_ICA.py ${PCAfilename}.npy ${results_dir}/average_mat2.npz ${ICAfilename} ${n_components}"
+
 
 
 # convert white matter components to nifti format
-for decomposition in NMF; do
+for decomposition in ICA NMF; do
 	jobsub -j -q imgcomputeq -p 1 -t 00:10:00 -m 5 -s wmconv_NMF -c "python ${scripts_dir}/npy2nifti.py ${results_dir}/${n_components}_${decomposition}_wm.npy ${data_dir}/100206/MNINonLinear/Results/Tractography_NMF ${volume_template}"
 # convert grey matter components to cifti
 	jobsub -j -q imgcomputeq -p 1 -t 00:10:00 -m 5 -s gmconv_NMF -c "python ${scripts_dir}/npy2cifti.py ${results_dir}/${n_components}_${decomposition}_gm.npy ${data_dir}/100206/MNINonLinear/Results/Tractography_NMF ${roi_path_l} ${roi_path_r} ${label_volume}"
