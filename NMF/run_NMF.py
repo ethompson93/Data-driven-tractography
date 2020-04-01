@@ -13,8 +13,11 @@ output_filename= sys.argv[2]
 #model order for the decomposition
 num_components = int(sys.argv[3])
 
+# alpha - the regularisation parameter - original is 0.1
+alpha= sys.argv[2]
+
 #regularisation parameters
-alpha=0.1
+# alpha=0.1
 l1_ratio=1
 
 #load connectivity matrix
