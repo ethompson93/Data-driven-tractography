@@ -14,7 +14,7 @@ output_filename= sys.argv[2]
 num_components = int(sys.argv[3])
 
 # alpha - the regularisation parameter - original is 0.1
-alpha= sys.argv[2]
+alpha= float(sys.argv[4])
 
 #regularisation parameters
 # alpha=0.1
