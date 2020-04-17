@@ -14,7 +14,7 @@ def dot2npz(filename):
 	f = gzip.GzipFile(filename, "r")
 	
 	x = np.loadtxt(f)
-	print x[-1,0]
+	
 	n_seed=x[-1,0]
 	n_target=x[-1,1]
 

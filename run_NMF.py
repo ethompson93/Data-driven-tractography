@@ -20,7 +20,7 @@ l1_ratio=1
 #load connectivity matrix
 x = sparse.load_npz(cm_path)
 connectivity_matrix = x.toarray()
-print "loaded data"
+print("loaded data")
 
 #apply NMF to connectivity matrix
 model = nmf(n_components=num_components, alpha=alpha, l1_ratio=l1_ratio, init="nndsvd", random_state=1)

@@ -32,10 +32,10 @@ start = time.time()
 group_gm = np.load(group_gm_path)
 n_comp = group_gm.shape[1]
 
-print "PARALLELISED, number of cores = {}, number of components = {}, chunksize = {}".format(n_cores, n_comp, chunksize)
+print("PARALLELISED, number of cores = {}, number of components = {}, chunksize = {}".format(n_cores, n_comp, chunksize))
 
 #load connectivity matrix
-print "preparing data"
+print("preparing data")
 x = sparse.load_npz(subj_cmat_path)
 connectivity_matrix = x.toarray()
 n_vertices, n_voxels = np.shape(connectivity_matrix)
@@ -51,7 +51,7 @@ end = time.time()
 print("time taken to load data = %s" % (end - start))
              
 #project group_data onto connectivity matrix
-print "calulating subject specific tract components"
+print("calulating subject specific tract components")
 start=time.time()
 tract_comp = np.zeros((n_comp, n_voxels))
 inputlist = [[group_gm, connectivity_matrix[:,i]] for i in range(n_voxels)]
@@ -67,7 +67,7 @@ end = time.time()
 print("time taken to generate wm components = %s" % (end - start))
 
 #find subject-specific mixing matrix
-print "calculating subject specific surface components"
+print("calculating subject specific surface components")
 start = time.time()
 surf_comp = np.zeros((n_comp, n_vertices))
 inputlist = [[tract_comp.T, connectivity_matrix.T[:,j]] for j in range(n_vertices)]

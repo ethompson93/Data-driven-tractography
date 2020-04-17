@@ -21,7 +21,7 @@ def run_ICA(PCs, connectivity_matrix, num_components) :
     
     ica = FastICA(n_components=num_components,random_state=1)
     gm_ICs= ica.fit_transform(PCs)
-    print 'resultant shape from ICA is {}'.format(np.shape(gm_ICs))
+    print('resultant shape from ICA is {}'.format(np.shape(gm_ICs)))
     
     #force the ICs to be positive on the long tail
     for i in range(0, num_components) :
@@ -41,7 +41,7 @@ def run_ICA(PCs, connectivity_matrix, num_components) :
 PCs = np.load(pca_path)
 x = sparse.load_npz(cm_path)
 connectivity_matrix = x.toarray()
-print "loaded data"
+print("loaded data")
 
 gm_ICs, wm_ICs = run_ICA(PCs, connectivity_matrix, num_components)
 
