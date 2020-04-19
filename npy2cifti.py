@@ -1,12 +1,11 @@
 import numpy as np
 import nibabel as nib
-import copy
-import subprocess
+from nibabel import cifti2
+import os.path
 import sys
 
 #path to grey matter component matrix in .npy format that you want to convert to cifti
 component_path = sys.argv[1]
-fname = component_path[:-4]
 
 #seed space coordinates from Fdt
 fdt_dir = sys.argv[2]
@@ -16,9 +15,8 @@ coordinate_path = fdt_dir + "/coords_for_fdt_matrix2"
 roi_path_l = sys.argv[3]
 roi_path_r= sys.argv[4]
 
-#path to label volume
-label_vol_path = sys.argv[5]
-
+#path to subcortical seed volume
+subcortical_path = sys.argv[5]
 
 #########################################################################################
 #load components
@@ -30,70 +28,32 @@ n_comp = np.shape(components)[1]
 
 #load in seed space coordinates
 file = open(coordinate_path, "r")
-coords = np.loadtxt(file)
+coords = np.loadtxt(file).astype(int)
 file.close()
-coords = coords.astype(int)
+volume_coords = coords[coords[:,3] >= 2]
 
-#seperate out left and right hemispheres
-left = coords[coords[:,3] == 0]
-right = coords[coords[:,3] == 1]
-volume = coords[coords[:,3] >= 2]
+#load subcortical seed volume
+subcortical_vol = nib.load(subcortical_path)
+subcortical_roi = subcortical_vol.get_data()
 
-n_l = np.shape(left)[0]
-n_r = np.shape(right)[0]
-n_v = np.shape(volume)[0]
+#load gifti ROIs
+roi_left = nib.load(roi_path_l).darrays[0].data != 0
+roi_right = nib.load(roi_path_r).darrays[0].data != 0
 
-comps_l= components[:n_l,:]
-comps_r = components[n_l:(n_r+n_l),:]
-comps_v = components[-n_v:,:]
+#set up cifti brain model axes
+bm_ctx_left = cifti2.BrainModelAxis.from_mask(roi_left, name="CortexLeft")
+bm_ctx_right = cifti2.BrainModelAxis.from_mask(roi_right, name="CortexRight")
 
-#load in gifti metric files
-left_roi = nib.load(roi_path_l)
-right_roi = nib.load(roi_path_r)
+bm_subcortical = cifti2.BrainModelAxis.from_mask(subcortical_roi, affine=subcortical_vol.affine, name="other")
 
-left_roi_ind = np.where(left_roi.darrays[0].data > 0)
-right_roi_ind = np.where(right_roi.darrays[0].data > 0)
+bm_subcortical.voxel = volume_coords[:,:3]
 
-tmp_l = nib.load(roi_path_l)
-tmp_r = nib.load(roi_path_r)
-tmp_l.darrays[0].data.setflags(write=1)
-tmp_r.darrays[0].data.setflags(write=1)
+bm = bm_ctx_left + bm_ctx_right + bm_subcortical
+sc = cifti2.ScalarAxis(np.arange(n_comp).astype("str"))
 
-tmp_l.darrays[0].data[left_roi_ind] = comps_l[:,0]
-tmp_r.darrays[0].data[right_roi_ind] = comps_r[:,0]
-    
-#save a gifti metric file for each component
-for j in range(1, n_comp) :
-	left = copy.deepcopy(left_roi.darrays[0].data)
-        right = copy.deepcopy(right_roi.darrays[0].data)
-        left[left_roi_ind] = comps_l[:,j].astype("float32")
-        right[right_roi_ind] = comps_r[:,j].astype("float32")
-        tmp_l.add_gifti_data_array(nib.gifti.gifti.GiftiDataArray(left))
-        tmp_r.add_gifti_data_array(nib.gifti.gifti.GiftiDataArray(right))
+#save cifti
+hdr = cifti2.Cifti2Header.from_axes((sc, bm))
+img = cifti2.Cifti2Image(components.T, hdr)
+new_fname = os.path.splitext(component_path)[0] + ".dscalar.nii"
 
-nib.save(tmp_r, fname + ".R.shape.gii")
-nib.save(tmp_l, fname + ".L.shape.gii")
-    
-#save volume part as nifti
-ref_img = nib.load(label_vol_path)
-ref_affine =ref_img.affine
-(x, y, z) = ref_img.shape
-volume_components = np.zeros((x, y, z, n_comp))
-for n in range(n_comp):
-	for v in range(n_v):
-		volume_components[volume[v,0], volume[v,1], volume[v,2], n]=comps_v[v,n]
-
-img = nib.Nifti1Image(volume_components, ref_affine)
-nib.save(img, fname + ".nii.gz")
-
-    
-#combine into a cifti
-subprocess.call(["wb_command", "-cifti-create-dense-scalar", "{}.dscalar.nii".format(fname),
-                     "-volume", "{}.nii.gz".format(fname), label_vol_path, "-left-metric", "{}.L.shape.gii".format(fname),
-                     "-roi-left", roi_path_l, "-right-metric", "{}.R.shape.gii".format(fname), "-roi-right", roi_path_r])
-
-#remove unnecessary files
-subprocess.call(["rm", "{}.nii.gz".format(fname)])
-subprocess.call(["rm", "{}.R.shape.gii".format(fname)])
-subprocess.call(["rm", "{}.L.shape.gii".format(fname)])
-
+nib.save(img, new_fname)
